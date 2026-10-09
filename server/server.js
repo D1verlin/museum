@@ -129,7 +129,8 @@ export const startServer = async () => {
   }
 };
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+const isTestRun = process.env.NODE_ENV === 'test' || process.argv.some(arg => String(arg).includes('test'));
+if (!isTestRun) {
   startServer();
 }
 

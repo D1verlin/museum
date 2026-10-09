@@ -49,8 +49,8 @@
 - **Развертывание на VDS Ubuntu (`museum.diverlin.ru`)**:
   - Порт: `3017`.
   - Менеджер процессов: PM2 (`ecosystem.config.cjs`).
-  - Веб-сервер: Nginx (`nginx/museum.diverlin.ru.conf`) с SSL-сертификатом Let's Encrypt (Certbot).
-  - Подробное руководство: [DEPLOYMENT_VDS_UBUNTU.md](DEPLOYMENT_VDS_UBUNTU.md).
+  - Веб-сервер: Apache2 (`apache/museum.diverlin.ru.conf`) или Nginx (`nginx/museum.diverlin.ru.conf`) с SSL-сертификатом Let's Encrypt (Certbot).
+  - Подробное руководство: [DEPLOYMENT_APACHE_UBUNTU.md](DEPLOYMENT_APACHE_UBUNTU.md) (Apache2) и [nginx/museum.diverlin.ru.conf](nginx/museum.diverlin.ru.conf) (Nginx).
 
 ---
 
