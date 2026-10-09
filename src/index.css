@@ -482,9 +482,11 @@ a {
 }
 
 .preset-card {
-  padding: 36px;
+  padding: 32px 28px;
   border-radius: 16px;
   background-color: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -513,16 +515,28 @@ a {
   line-height: 1.5;
 }
 
+.preset-buttons-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  flex-wrap: nowrap;
+}
+
 .preset-btn-primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 10px 12px;
   border-radius: 10px;
   background-color: var(--text-graphite);
   color: #FFFFFF;
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
   transition: opacity var(--trans-speed) var(--ease-aura);
 }
 
@@ -533,19 +547,37 @@ a {
 .preset-btn-ghost {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 10px 10px;
   border-radius: 10px;
   background-color: var(--bg-surface);
   color: var(--text-charcoal);
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: background-color var(--trans-speed) var(--ease-aura);
 }
 
 .preset-btn-ghost:hover {
   background-color: var(--bg-surface-hover);
   color: var(--text-graphite);
+}
+
+.glass-card,
+.card-surface {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.card-dark-surface {
+  background-color: #17171A;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+  color: #FFFFFF;
 }
 
 .halls-section {

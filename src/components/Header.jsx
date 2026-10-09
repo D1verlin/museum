@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRoute } from '../context/RouteContext';
-import { Clock, Compass, Layers, CalendarCheck, AlertCircle, Menu, X } from 'lucide-react';
+import { Clock, Compass, Layers, CalendarCheck, AlertCircle, Menu, X, User, Shield } from 'lucide-react';
 
 export const Header = () => {
   const {
@@ -9,7 +9,8 @@ export const Header = () => {
     selectedExhibits,
     totalEstimatedTime,
     isOverLimit,
-    overLimitDelta
+    overLimitDelta,
+    user
   } = useRoute();
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -96,6 +97,67 @@ export const Header = () => {
               </button>
             )}
 
+            {user?.role === 'admin' && (
+              <button
+                onClick={() => handleNavClick('admin')}
+                className={`nav-link ${currentView === 'admin' ? 'active' : ''}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '6px 12px',
+                  borderRadius: 20,
+                  background: currentView === 'admin' ? 'var(--text-graphite)' : 'var(--bg-surface)',
+                  color: currentView === 'admin' ? '#FFFFFF' : 'var(--text-graphite)',
+                  border: '1px solid rgba(0, 0, 0, 0.08)'
+                }}
+              >
+                <Shield size={14} />
+                <span style={{ fontSize: 13, fontWeight: 500 }}>Админ</span>
+              </button>
+            )}
+
+            {user ? (
+              <button
+                onClick={() => handleNavClick('profile')}
+                className={`nav-link ${currentView === 'profile' ? 'active' : ''}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '6px 12px',
+                  borderRadius: 20,
+                  background: currentView === 'profile' ? 'var(--text-graphite)' : 'var(--bg-surface)',
+                  color: currentView === 'profile' ? '#FFFFFF' : 'var(--text-graphite)',
+                  border: '1px solid rgba(0, 0, 0, 0.08)'
+                }}
+              >
+                <User size={14} />
+                <span style={{ fontSize: 13, fontWeight: 500 }}>
+                  {user.fullName ? user.fullName.split(' ')[0] : 'Профиль'}
+                </span>
+              </button>
+            ) : (
+              <button
+                onClick={() => handleNavClick('auth')}
+                className={`nav-link ${currentView === 'auth' ? 'active' : ''}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '6px 14px',
+                  borderRadius: 20,
+                  border: '1px solid rgba(0, 0, 0, 0.12)',
+                  fontSize: 13,
+                  color: 'var(--text-graphite)',
+                  background: 'var(--bg-surface)'
+                }}
+              >
+                <User size={14} />
+                <span>Войти</span>
+              </button>
+            )}
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="mobile-menu-btn"
@@ -126,6 +188,26 @@ export const Header = () => {
               </button>
             );
           })}
+
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => handleNavClick('admin')}
+              className={`mobile-nav-link ${currentView === 'admin' ? 'active' : ''}`}
+              style={{ borderTop: '1px solid var(--border-soft)', marginTop: 8, paddingTop: 12 }}
+            >
+              <Shield size={16} />
+              <span>Админ-панель музея</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => handleNavClick(user ? 'profile' : 'auth')}
+            className={`mobile-nav-link ${currentView === 'profile' || currentView === 'auth' ? 'active' : ''}`}
+            style={{ borderTop: user?.role === 'admin' ? 'none' : '1px solid var(--border-soft)', marginTop: user?.role === 'admin' ? 0 : 8, paddingTop: user?.role === 'admin' ? 6 : 12 }}
+          >
+            <User size={16} />
+            <span>{user ? `Профиль (${user.fullName.split(' ')[0]})` : 'Войти в аккаунт'}</span>
+          </button>
         </div>
       )}
     </header>

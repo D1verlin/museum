@@ -1,14 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useRoute } from '../context/RouteContext';
-import { halls } from '../data/hallsData';
 import { ArrowRight, Layers } from 'lucide-react';
 
 export const HomeView = () => {
   const {
     setCurrentView,
     loadCuratedRoute,
-    navigateToCatalogWithFilter
+    navigateToCatalogWithFilter,
+    halls
   } = useRoute();
 
   const reviews = [
@@ -115,7 +115,7 @@ export const HomeView = () => {
                   Малоритская Богоматерь, золотой Слуцкий пояс, весенний пейзаж Бялыницкого-Бирули и Партизанская мадонна.
                 </p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+              <div className="preset-buttons-row">
                 <button
                   type="button"
                   onClick={() => {
@@ -133,7 +133,7 @@ export const HomeView = () => {
                   className="preset-btn-ghost"
                 >
                   <Layers size={13} />
-                  <span>В каталог</span>
+                  <span>Каталог</span>
                 </button>
               </div>
             </div>
@@ -149,7 +149,7 @@ export const HomeView = () => {
                   Барочная резьба, слуцкие мануфактуры, портреты Радзивиллов, натюрморты Хруцкого и романтизм Ваньковича.
                 </p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+              <div className="preset-buttons-row">
                 <button
                   type="button"
                   onClick={() => {
@@ -167,7 +167,7 @@ export const HomeView = () => {
                   className="preset-btn-ghost"
                 >
                   <Layers size={13} />
-                  <span>Зал портрета</span>
+                  <span>Каталог</span>
                 </button>
               </div>
             </div>
@@ -183,7 +183,7 @@ export const HomeView = () => {
                   Символизм Рущица, суровый стиль Савицкого, экспрессия Мая Данцига и бронзовая пластика Гумилевского.
                 </p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+              <div className="preset-buttons-row">
                 <button
                   type="button"
                   onClick={() => {
@@ -201,7 +201,7 @@ export const HomeView = () => {
                   className="preset-btn-ghost"
                 >
                   <Layers size={13} />
-                  <span>Зал XX века</span>
+                  <span>Каталог</span>
                 </button>
               </div>
             </div>
@@ -220,46 +220,49 @@ export const HomeView = () => {
           </div>
 
           <div className="halls-grid">
-            {halls.map((hall, idx) => (
-              <motion.div
-                key={hall.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: idx * 0.08 }}
-                onClick={() => navigateToCatalogWithFilter({ hallId: hall.id, category: 'all', period: 'all', search: '' })}
-                className="hall-card"
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-smoke)' }}>
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: 'var(--text-graphite)' }}>
-                      {hall.floor}
-                    </span>
-                    <span>{hall.exhibitsCount} шедевра в каталоге</span>
+            {halls.map((hall, idx) => {
+              const hId = hall.hallId || hall.id;
+              return (
+                <motion.div
+                  key={hId}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: idx * 0.08 }}
+                  onClick={() => navigateToCatalogWithFilter({ hallId: hId, category: 'all', period: 'all', search: '' })}
+                  className="hall-card"
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-smoke)' }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: 'var(--text-graphite)' }}>
+                        {hall.floor}
+                      </span>
+                      <span>{hall.exhibitsCount} шедевра в каталоге</span>
+                    </div>
+                    <h3 style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-graphite)' }}>
+                      {hall.name}
+                    </h3>
+                    <p style={{ fontSize: 14, color: 'var(--text-charcoal)', lineHeight: 1.6 }}>
+                      {hall.theme}
+                    </p>
                   </div>
-                  <h3 style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-graphite)' }}>
-                    {hall.name}
-                  </h3>
-                  <p style={{ fontSize: 14, color: 'var(--text-charcoal)', lineHeight: 1.6 }}>
-                    {hall.theme}
-                  </p>
-                </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16 }}>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigateToCatalogWithFilter({ hallId: hall.id, category: 'all', period: 'all', search: '' });
-                    }}
-                    className="hall-card-btn"
-                  >
-                    <span>Экспонаты зала</span>
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16 }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigateToCatalogWithFilter({ hallId: hId, category: 'all', period: 'all', search: '' });
+                      }}
+                      className="hall-card-btn"
+                    >
+                      <span>Экспонаты зала</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

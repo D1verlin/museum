@@ -1,0 +1,857 @@
+{
+  "info": {
+    "_postman_id": "8e36484e-bce0-4107-84bc-5b4d754b9d01",
+    "name": "НХМ РБ — REST API (Интерактивный музейный гид)",
+    "description": "Комплексный набор запросов REST API для II этапа разработки серверной части веб-приложения (Node.js, Express, SQLite/Sequelize, JWT, бизнес-логика хронометража и цифровых билетов).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Аутентификация и безопасность",
+      "item": [
+        {
+          "name": "1. Регистрация нового посетителя (POST /auth/register)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Успешный ответ и наличие токена\", function () {",
+                  "    pm.expect(json.success).to.be.true;",
+                  "    pm.expect(json.data.token).to.be.a('string');",
+                  "});",
+                  "if (json.data && json.data.token) {",
+                  "    pm.environment.set(\"token\", json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"visitor_{{$timestamp}}@artmuseum.by\",\n  \"password\": \"VisitorPass123!\",\n  \"fullName\": \"Алексей Смирнов\",\n  \"phone\": \"+375 (29) 123-45-67\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "2. Попытка регистрации дубликата email (POST /auth/register - 409 Conflict)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 409 Conflict\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Код ошибки EMAIL_ALREADY_REGISTERED\", function () {",
+                  "    pm.expect(json.success).to.be.false;",
+                  "    pm.expect(json.error.code).to.eql('EMAIL_ALREADY_REGISTERED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"visitor@artmuseum.by\",\n  \"password\": \"VisitorPass123!\",\n  \"fullName\": \"Повторный Посетитель\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "3. Вход пользователя (POST /auth/login)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.token) {",
+                  "    pm.environment.set(\"token\", json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"visitor@artmuseum.by\",\n  \"password\": \"VisitorPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "4. Вход администратора (POST /auth/login)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK и роль admin\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.user.role).to.eql('admin');",
+                  "    pm.environment.set(\"adminToken\", json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@artmuseum.by\",\n  \"password\": \"AdminPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "5. Получение своего профиля с токеном (GET /auth/me)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.user).to.have.property('email');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "6. Запрос без токена (GET /auth/me - 401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.error.code).to.eql('AUTH_REQUIRED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Залы музея (Halls)",
+      "item": [
+        {
+          "name": "1. Список всех залов (GET /halls)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK и 5 залов\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "    pm.expect(json.data.length).to.eql(5);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/halls",
+              "host": ["{{baseUrl}}"],
+              "path": ["halls"]
+            }
+          }
+        },
+        {
+          "name": "2. Детали конкретного зала с экспонатами (GET /halls/1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.hallId).to.eql(1);",
+                  "    pm.expect(json.data.exhibits).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/halls/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["halls", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Экспонаты (Exhibits)",
+      "item": [
+        {
+          "name": "1. Каталог экспонатов (GET /exhibits)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.total).to.be.at.least(15);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exhibits",
+              "host": ["{{baseUrl}}"],
+              "path": ["exhibits"]
+            }
+          }
+        },
+        {
+          "name": "2. Фильтрация по залу (GET /exhibits?hallId=2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exhibits?hallId=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["exhibits"],
+              "query": [
+                {
+                  "key": "hallId",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Поиск по ключевому слову (GET /exhibits?search=пояс)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exhibits?search=%D0%BF%D0%BE%D1%8F%D1%81",
+              "host": ["{{baseUrl}}"],
+              "path": ["exhibits"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "%D0%BF%D0%BE%D1%8F%D1%81"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. Детали экспоната (GET /exhibits/exhibit-001)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exhibits/exhibit-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["exhibits", "exhibit-001"]
+            }
+          }
+        },
+        {
+          "name": "5. Попытка добавления экспоната посетителем (POST /exhibits - 403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"exhibit-unauth\",\n  \"title\": \"Неавторизованный экспонат\",\n  \"artist\": \"Хакер\",\n  \"hallId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/exhibits",
+              "host": ["{{baseUrl}}"],
+              "path": ["exhibits"]
+            }
+          }
+        },
+        {
+          "name": "6. Добавление экспоната администратором (POST /exhibits - 201 Created)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"exhibit-pm-test\",\n  \"title\": \"Новый тестовый экспонат из Postman\",\n  \"artist\": \"Современный автор\",\n  \"period\": \"2026 г.\",\n  \"periodKey\": \"contemporary\",\n  \"periodLabel\": \"XXI век\",\n  \"category\": \"Современное искусство\",\n  \"categoryKey\": \"contemporary\",\n  \"categoryLabel\": \"Современное искусство\",\n  \"hallId\": 5,\n  \"hallName\": \"Зал монументального и современного искусства XX века\",\n  \"durationMinutes\": 10,\n  \"imageUrl\": \"./images/exhibits/exhibit-013.jpg\",\n  \"description\": \"Экспонат, добавленный через Postman для проверки CRUD прав\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/exhibits",
+              "host": ["{{baseUrl}}"],
+              "path": ["exhibits"]
+            }
+          }
+        },
+        {
+          "name": "7. Удаление экспоната администратором (DELETE /exhibits/:id)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/exhibits/exhibit-pm-test",
+              "host": ["{{baseUrl}}"],
+              "path": ["exhibits", "exhibit-pm-test"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Бизнес-логика: Хронометраж и маршруты",
+      "item": [
+        {
+          "name": "1. Расчет хронометража маршрута (POST /routes/calculate)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK и корректный расчет\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.totalEstimatedTime).to.be.above(0);",
+                  "    pm.expect(json.data.transitTime).to.be.at.least(0);",
+                  "    pm.expect(json.data.hallsSequence).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exhibitIds\": [\"exhibit-001\", \"exhibit-003\", \"exhibit-011\"],\n  \"pace\": \"standard\",\n  \"availableTime\": 90\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/routes/calculate",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes", "calculate"]
+            }
+          }
+        },
+        {
+          "name": "2. Расчет с превышением лимита времени (POST /routes/calculate - isOverLimit)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Флаг isOverLimit равен true\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.isOverLimit).to.be.true;",
+                  "    pm.expect(json.data.overLimitDelta).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exhibitIds\": [\"exhibit-001\", \"exhibit-002\", \"exhibit-003\", \"exhibit-007\", \"exhibit-011\"],\n  \"pace\": \"inDepth\",\n  \"availableTime\": 45\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/routes/calculate",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes", "calculate"]
+            }
+          }
+        },
+        {
+          "name": "3. Список кураторских маршрутов (GET /routes/presets)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/routes/presets",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes", "presets"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Визиты и цифровые пропуска (Visits)",
+      "item": [
+        {
+          "name": "1. Оформление визита и генерация билета (POST /visits)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 201 Created и генерация AURA-билета\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.ticketNumber).to.match(/^AURA-\\d+$/);",
+                  "    pm.environment.set(\"testTicketNumber\", json.data.ticketNumber);",
+                  "    pm.environment.set(\"testVisitId\", json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visitorName\": \"Алексей Смирнов\",\n  \"email\": \"visitor@artmuseum.by\",\n  \"phone\": \"+375 (29) 123-45-67\",\n  \"visitDate\": \"2026-10-15\",\n  \"timeSlot\": \"13:00\",\n  \"pace\": \"standard\",\n  \"availableTime\": 90,\n  \"exhibitIds\": [\"exhibit-001\", \"exhibit-003\", \"exhibit-009\", \"exhibit-011\"],\n  \"notes\": \"Индивидуальный визит с аудиогидом\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/visits",
+              "host": ["{{baseUrl}}"],
+              "path": ["visits"]
+            }
+          }
+        },
+        {
+          "name": "2. Валидация санитарного дня музея (POST /visits - 422 Вторник закрыт)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 422 и код MUSEUM_CLOSED_TUESDAY\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.error.code).to.eql('MUSEUM_CLOSED_TUESDAY');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visitorName\": \"Посетитель Вторника\",\n  \"email\": \"test@test.by\",\n  \"visitDate\": \"2026-10-13\",\n  \"timeSlot\": \"14:00\",\n  \"exhibitIds\": [\"exhibit-001\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/visits",
+              "host": ["{{baseUrl}}"],
+              "path": ["visits"]
+            }
+          }
+        },
+        {
+          "name": "3. Список визитов пользователя (GET /visits)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/visits",
+              "host": ["{{baseUrl}}"],
+              "path": ["visits"]
+            }
+          }
+        },
+        {
+          "name": "4. Поиск билета по уникальному номеру (GET /visits/:ticketNumber)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/visits/{{testTicketNumber}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["visits", "{{testTicketNumber}}"]
+            }
+          }
+        },
+        {
+          "name": "5. Отмена визита пользователем (PATCH /visits/:id/status -> cancelled)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус изменен на cancelled\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql('cancelled');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"cancelled\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/visits/{{testVisitId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["visits", "{{testVisitId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "6. Запрет повторной активации отмененного билета (PATCH /visits/:id/status - 422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 422 Unprocessable Entity\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.error.code).to.eql('INVALID_STATE_TRANSITION');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/visits/{{testVisitId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["visits", "{{testVisitId}}", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Системный статус (Health)",
+      "item": [
+        {
+          "name": "1. Проверка состояния API и базы данных (GET /health)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql('UP');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3017/api",
+      "type": "string"
+    },
+    {
+      "key": "baseurl",
+      "value": "http://localhost:3017/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTicketNumber",
+      "value": "AURA-774102",
+      "type": "string"
+    },
+    {
+      "key": "testVisitId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "testExhibitId",
+      "value": "exhibit-001",
+      "type": "string"
+    }
+  ]
+}

@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useRoute } from '../context/RouteContext';
-import { exhibits, PERIODS, CATEGORIES } from '../data/exhibitsData';
-import { halls } from '../data/hallsData';
+import { PERIODS, CATEGORIES } from '../constants/museumConstants';
 import { Search, Plus, Check } from 'lucide-react';
 
 export const CatalogView = () => {
   const {
+    exhibits,
+    halls,
+    dataLoading,
     isInRoute,
     toggleExhibit,
     setActiveModalExhibit,
@@ -154,14 +156,15 @@ export const CatalogView = () => {
                   Все залы
                 </button>
                 {halls.map((hall) => {
-                  const active = String(selectedHall) === String(hall.id);
+                  const hId = hall.hallId || hall.id;
+                  const active = String(selectedHall) === String(hId);
                   return (
                     <button
-                      key={hall.id}
-                      onClick={() => setSelectedHall(String(hall.id))}
+                      key={hId}
+                      onClick={() => setSelectedHall(String(hId))}
                       className={`pure-tag-btn ${active ? 'active' : ''}`}
                     >
-                      {hall.shortName}
+                      {hall.shortName || hall.name}
                     </button>
                   );
                 })}

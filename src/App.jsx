@@ -10,6 +10,10 @@ import { CatalogView } from './views/CatalogView';
 import { DashboardView } from './views/DashboardView';
 import { CheckoutView } from './views/CheckoutView';
 import { DetailModal } from './views/DetailModal';
+import { VisitDetailModal } from './components/VisitDetailModal';
+import { AuthView } from './views/AuthView';
+import { ProfileView } from './views/ProfileView';
+import { AdminView } from './views/AdminView';
 
 const AppContent = () => {
   const { currentView } = useRoute();
@@ -69,10 +73,47 @@ const AppContent = () => {
               <CheckoutView />
             </motion.div>
           )}
+
+          {currentView === 'auth' && (
+            <motion.div
+              key="auth"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <AuthView />
+            </motion.div>
+          )}
+
+          {currentView === 'profile' && (
+            <motion.div
+              key="profile"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <ProfileView />
+            </motion.div>
+          )}
+
+          {currentView === 'admin' && (
+            <motion.div
+              key="admin"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <AdminView />
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
       <DetailModal />
+      <VisitDetailModal />
       <Footer />
     </div>
   );
